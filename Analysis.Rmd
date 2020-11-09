@@ -54,7 +54,7 @@ library("see")
 library("viridis")
 library("ggpubr")
 library("Manu")
-#library("wesanderson")
+library("wesanderson")
 library("ggsci")
 library("equatiomatic")
 library("report")
@@ -357,12 +357,26 @@ dm1<-as.data.frame(bbt1)%>%
   plot(labels = FALSE)%>%
   ggpar(main = "")
 r1<-brms::conditional_effects(m2, "churchfreq", resp ="cooperativereputationLOG")
-r1
 r7<-brms::conditional_effects(m2, "churchfreq", resp ="churchdonationN", categorical =F)
-r7
 r8<-brms::conditional_effects(m2, "cooperativereputationLOG", resp ="churchdonationN", categorical =F)
+```
+
+Plot 1
+```{r}
+r1
+```
+
+Plot 2
+```{r}
+r7
+```
+
+Plot 3
+```{r}
 r8
 ```
+
+
 ```{r,  mediation_plot, echo=FALSE, cache=TRUE}
 med1<-ggarrange(ggarrange(pm1,dm1,labels=c("   i","ii")),ggarrange(pt1,r1, widths = c(1,1),labels=c("ii","iii")),nrow=2, heights=c(3,1))
 med1
