@@ -1,146 +1,22 @@
 # to replace "anlaysis.Rmd"
 source("libs.R") # load libraries
 source("funs.R") # load functions
-devtools::install_github("ropensci/drake")
-a# set theme
-test<-read_johns_data()
-test<-johns_clean_data(test)
-head(test)
 
-theme_set(theme_pubclean())
+# data cleaning -----------------------------------------------------------
 
-jsor%>%
-  filter(is.na(church_date))%>%
-  nrow()
-# we observe that the dava dates differ from the church datas. 
-jsor%>%
-  filter(is.na(kava_date))%>%
-  filter(is.na(church_date))%>%
-  nrow()
-# number of ids
-length(unique(jsor$id)) # 50 people, 
-# or another method of counting ideas.
-jsor %>% 
-  distinct(id) %>% 
-  count()
-# check date
-print(jsor$church_date) # inconsistent data fomats format 
-library(stringr)
-# test a method for fixing (as I've not done this before)
-fruits <- c("6/27/2010", "7/25/2010","7/25/10")
-stringr::str_replace(fruits,"/10","/2010")
-# method works 
-
-# proceed to fix the dates
-js1<-jsor %>% 
-  dplyr::mutate(church_dateR = church_date)%>% # ccreate new column in case of SNAFU
-  dplyr::mutate(church_dateR = stringr::str_replace_all(church_dateR, "/10","/2010")) # apply method
-# checks slook good
-head(js1$church_dateR)
-head(js1$church_date)
-
-# not sure what I did here so commenting out (consider deletin later)
-# js1%>%
-#   dplyr::mutate(church_dateR = as.Date(church_dateR,format = "%m/%d/%Y"))%>%
-#   head()
-```
-```{r,  echo=TRUE, cache=FALSE}
-# get data frame in read for analysis
-js<-js1%>%
-  dplyr::mutate(male =factor(ifelse(sex==1,"male","not_male"))) %>% # fix bad coding
-  dplyr::mutate(id = factor(id) )%>% 
-  dplyr::select(-church_at_risk) %>%  # we don't want this in our models -- if you can't attend it doesnt' count
-  dplyr::mutate(church_attendF = factor(church_attend))%>% 
-  dplyr::mutate(timeF = factor(time)) %>% 
-  dplyr::mutate(church_event_noF = factor(church_event_no))%>%
-  dplyr::mutate(church_dateF = factor(church_dateR),
-                kava_dateF = factor(kava_date),
-                reported_attendanceF = factor(reported_attendance),
-                church_donationF = factor(church_donation),
-                church_donationN = as.numeric(church_donationF),
-                church_donationC = scale(church_donationN,center=T,scale=F),
-                village_donationF = factor(village_donation),
-                village_donationN = as.numeric(village_donationF),
-                village_rankN = as.numeric(village_rank),
-                village_rankS = scale(village_rankN))%>%
-  arrange(id)
-```
+d <-data_read_john()
+d <-data_clean_john(d) 
+d <-data_churchdates_fix_john(d) # fix dates
 
 
-```{r,  echo=FALSE, include=FALSE}
-#inspect data  commending this out because its not needed.
-# js%>%
-#   glimse()
-# js %>% 
-#   filter(is.na(church_dateR)) %>% 
-#   nrow() #841
-# js %>% 
-#   filter(is.na(church_date)) %>% 
-#   nrow()  # also 841  
-# js%>%
-#   filter(is.na(kava_date))%>%
-#   nrow() # different analysis
-# nrow(js) # this suggests kava dates and church dates differ.
-# js%>%
-#   dplyr::mutate(KavaAndChurch = factor(ifelse(!is.na(kava_dateF)&!is.na(church_dateF),1,0)))%>%
-#   dplyr::filter(KavaAndChurch ==1)%>%
-#   nrow()  # and indeed this is the case
-# head(js)
-# 1140/3241 # 35% NAs?
-```
 
-The purpose of our study is to investigate how religious attendance affects cooperation via religious reptuational pathways.
+# data exploration --------------------------------------------------------
 
-But before we get to that, we explore the data
-
-
-```{r,  echo=TRUE, cache=TRUE}
-# So, some basic correlations to investigate relationships. 
-library(correlation)
-library(see) # for plotting
-library(ggraph) # needs to be loaded
-js %>% 
-  dplyr::select(cooperative_reputation,religious_reputation)%>%
-  correlation(partial = TRUE) %>% 
-  summary()
-js %>% 
-  dplyr::select(cooperative_reputation,church_donationN)%>%
-  correlation(partial = TRUE) %>% 
-  summary()
-js %>% 
-  dplyr::select(religious_reputation,church_donationN)%>%
-  correlation(partial = TRUE) %>% 
-  summary()
-js %>% 
-  dplyr::select(cooperative_reputation,village_donationN)%>%
-  correlation(partial = TRUE) %>% 
-  summary()
-js %>% 
-  dplyr::select(religious_reputation,village_donationN)%>%
-  correlation(partial = TRUE) %>% 
-  summary()
-js %>% 
-  dplyr::select(church_attend,church_donationN)%>%
-  correlation(partial = TRUE) %>% 
-  summary()
-js %>% 
-  dplyr::select(religious_reputation,church_donationN)%>%
-  correlation(partial = TRUE) %>% 
-  summary()
-js %>% 
-  dplyr::select(church_attend,church_donationN)%>%
-  correlation(partial = TRUE) %>% 
-  summary()
-js %>% 
-  dplyr::select(religious_reputation,village_donationN)%>%
-  correlation(partial = TRUE) %>% 
-  summary()
-js %>% 
-  dplyr::select(religious_reputation,reported_attendance)%>%
-  correlation(partial = TRUE) %>% 
-  summary()
-# we could carry on with more correlations, but lets hold off on that
-```
+show_correlations(d,"cooperative_reputation","religious_reputation")
+show_correlations(d,"religious_reputation","church_donationN")
+show_correlations(d,"cooperative_reputation","village_donationN")
+show_correlations(d,"religious_reputation","church_attend")
+show_correlations(d,"village_donationN","church_donationN")
 
 
 No, to replicate the study John and Martin's study. Not that we really need to assess the ordering of the event within in date (whether first, second or third.)  I (JB) need to understand John's coding better before we can do that.
