@@ -22,41 +22,18 @@ show_correlations(d,"village_donationN","church_donationN")
 No, to replicate the study John and Martin's study. Not that we really need to assess the ordering of the event within in date (whether first, second or third.)  I (JB) need to understand John's coding better before we can do that.
 
 
-```{r,  echo=TRUE, cache=TRUE,dependson="js"}
-# Let's get on to some modelling. This is the model that John and Martin are running (I think)
-library(brms)
-# because I can't get the dates right, I'll assume need the date factor. 
-# does reported attendance predict attendance bu wed 
-# only the church data
+# model  observed church attendence by reported attendance ----------------
 
-m1 <-
-  brm(data = js, family = bernoulli,
-      church_attend  ~ male + reported_attendanceF  + (1|church_dateF/id),
-      prior(normal(0, 10), class = Intercept),
-      seed = 10,
-      file = here("m1"))
-#summary(m1) # ugly
-```
-
-```{r,  coefficient_plot_reported_attendance_predicts_attendance, echo=FALSE}
-plot_model(m1,cache=TRUE)
-```
-
-```{r,  echo=FALSE, cache=TRUE,}
-tab_model(m1)
-```
-
-Here is a figure showing the predicted probabilities for male/not males. I don't know the coding but I could guess. 
+m1<-model_brm_church(d) # model 
+show_coef_plot(m1) + ggtitle("")
+sjPlot::tab_model(m1) # table
 
 
-```{r echo=TRUE, cache =TRUE, dependson=m1}
+# predicton graph ---------------------------------------------------------
+
 gp<-ggpredict(m1, terms =c("male","reported_attendanceF"))
-p1<-plot(gp, facets = F, color="viridis") + scale_y_continuous(limits=c(0,1)) + theme_clean() 
+p1<-plot(gp, facets = F, color="viridis") + scale_y_continuous(limits=c(0,1)) + theme_clean()
 p1 + xlab("reported attendance (factor)") + ylab("probability of church attendance") + ggtitle("Predicted probabilities of church attendance for men and women")
-```
-
-
-Some data wrangling to get the proportions of church attendance. Note that we remove the "at risk" cases because you can only skip or attend church if you can skip or attend church. We removed those cases above. 
 
 
 ```{r, cache=TRUE,dependson=js}

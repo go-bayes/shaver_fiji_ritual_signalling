@@ -50,3 +50,23 @@ show_correlations <- function(df,x,y) {
   correlation::correlation(partial = TRUE) %>% 
   summary()
 }
+
+
+
+model_brm_church <- function(df) {
+  bf <- bf(church_attend  ~ male + reported_attendanceF  + (1|church_dateF/id))
+  priorI <- prior(normal(0, 2), class = Intercept)
+  priorB  <- prior(normal(0, 2), class = b)
+  out <- brm(bf,
+             data = df, 
+             family = bernoulli,
+             priorI,
+             priorB,
+             seed = 10)
+  return(out)
+}
+
+show_coef_plot <- function(x) {
+  out = plot(parameters::model_parameters(x))
+  plot(out) # 
+}
