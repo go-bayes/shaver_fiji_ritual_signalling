@@ -1,11 +1,11 @@
 #Functions
 
-read_johns_data <- function(){
+data_read_john <- function(){
   out <-read.csv(here::here("fiji_economic_game_master.csv"))
   }
 
-johns_clean_data <- function(d) {
-  out <- d %>% 
+data_clean_john <- function(df) {
+  out <- df %>% 
     dplyr::mutate(church_dateR = church_date)%>% # create new column in case of SNAFU%
     dplyr::mutate(church_dateR = stringr::str_replace_all(church_dateR, "/10","/2010")) %>%
     dplyr::mutate(male =factor(ifelse(sex==1,"male","not_male"))) %>% # fix bad coding
@@ -24,6 +24,29 @@ johns_clean_data <- function(d) {
                   village_donationN = as.numeric(village_donationF),
                   village_rankN = as.numeric(village_rank),
                   village_rankS = scale(village_rankN))%>%
+    dplyr::mutate(church_dateR = church_date)%>% # create new column in case of SNAFU
+    dplyr::mutate(church_dateR = stringr::str_replace_all(church_dateR, "/10","/2010")) # apply method
     arrange(id)
   return(out)
+}
+
+
+show_unique_id <- function(df,y){
+  id =  paste0(y) # name of Id variable
+  numb <- length(unique(df$id)) # count # of ids
+  print(numb)
+}
+
+
+show_missings <- function(df) {
+  n <- sum(is.na(df))
+  cat("Missing values: ", n, "\n", sep = "")
+  
+  invisible(df)
+}
+
+show_correlations <- function(df,x,y) {
+  df %>% dplyr::select(x,y)%>%
+  correlation::correlation(partial = TRUE) %>% 
+  summary()
 }

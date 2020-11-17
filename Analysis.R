@@ -1,12 +1,13 @@
 # to replace "anlaysis.Rmd"
 source("libs.R") # load libraries
 source("funs.R") # load functions
-# set theme
+devtools::install_github("ropensci/drake")
+a# set theme
 test<-read_johns_data()
 test<-johns_clean_data(test)
+head(test)
 
 theme_set(theme_pubclean())
-jsor <- read.csv(here("/fiji_economic_game_master.csv"))
 
 jsor%>%
   filter(is.na(church_date))%>%
